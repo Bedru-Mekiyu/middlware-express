@@ -1,27 +1,39 @@
+const AppError = require('../utils/AppError');
+
+const handleJWTError = () =>
+    new AppError('Invalid token. Please log in again.', 401);
+
+const handleJWTExpiredError = () =>
+    new AppError('Your token has expired. Please log in again.', 401);
+
 const errorHandler = (err, req, res, next) => {
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || 'error';
+    let error = { ...err };
+    error.message = err.message;
 
     if (process.env.NODE_ENV === 'development') {
-        return res.status(err.statusCode).json({
-            status: err.status,
+        return res.status(err.statusCode || 500).json({
+            status: err.status || 'error',
             message: err.message,
             stack: err.stack,
             error: err
         });
     }
 
-    // Production mode
-    if (err.isOperational) {
-        return res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message
+    // Handle JWT errors
+    if (err.name === 'JsonWebTokenError') error = handleJWTError();
+    if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
+
+    // Operational error
+    if (error.isOperational) {
+        return res.status(error.statusCode).json({
+            status: error.status,
+            message: error.message
         });
     }
 
     console.error('UNEXPECTED ERROR:', err);
 
-    res.status(500).json({
+    return res.status(500).json({
         status: 'error',
         message: 'Something went wrong.'
     });

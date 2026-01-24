@@ -17,7 +17,7 @@ exports.protect = async (req, res, next) => {
         return next(new AppError('You are not logged in', 401));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
     const currentUser = await User.findById(decoded.id);
 

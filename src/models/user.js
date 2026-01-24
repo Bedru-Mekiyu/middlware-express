@@ -22,7 +22,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user'
-    }
+    },
+    refreshToken: {
+    type: String
+}
+
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {
