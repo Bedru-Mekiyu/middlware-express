@@ -1,5 +1,8 @@
 const dotenv = require('dotenv');
 dotenv.config();
+const connectDB = require('./src/config/db');
+connectDB();
+
 
 process.on('uncaughtException', err => {
     console.error('UNCAUGHT EXCEPTION');
