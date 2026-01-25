@@ -5,6 +5,9 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const csurf = require('csurf');
+const morgan = require('morgan');
+const logger = require('./config/logger');
+
 
 const userRoutes = require('./src/routes/userRoutes');
 const errorHandler = require('./src/middlewares/errorHandler');
@@ -50,6 +53,14 @@ const limiter = rateLimit({
     message: 'Too many requests from this IP. Please try again later.'
 });
 
+const stream = {
+    write: (message) => logger.info(message.trim())
+};
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+} else {
+    app.use(morgan('combined', { stream }));
+}
 
 
 

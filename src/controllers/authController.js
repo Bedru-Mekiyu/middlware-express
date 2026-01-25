@@ -2,6 +2,21 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const AppError = require('../utils/AppError');
 
+const logger = require('../config/logger');
+
+logger.info({
+    event: 'User login',
+    userId: user._id,
+    email: user.email,
+    ip: req.ip
+});
+logger.warn({
+    event: 'Failed login attempt',
+    email,
+    ip: req.ip
+});
+
+
 const signAccessToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_ACCESS_SECRET, {
         expiresIn: process.env.JWT_ACCESS_EXPIRES

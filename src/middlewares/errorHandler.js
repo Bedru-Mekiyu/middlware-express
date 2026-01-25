@@ -1,4 +1,8 @@
 const AppError = require('../utils/AppError');
+const logger = require('../config/logger');
+
+
+
 
 const handleJWTError = () =>
     new AppError('Invalid token. Please log in again.', 401);
@@ -38,5 +42,12 @@ const errorHandler = (err, req, res, next) => {
         message: 'Something went wrong.'
     });
 };
+
+logger.error({
+    message: err.message,
+    stack: err.stack,
+    url: req.originalUrl,
+    method: req.method
+});
 
 module.exports = errorHandler;
