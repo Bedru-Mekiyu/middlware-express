@@ -1,12 +1,23 @@
 {
-  "name": "middlware-express",
+  "name": "express-auth-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Production-ready Express.js authentication and user management API with JWT, CSRF protection, and security middleware",
   "main": "server.js",
   "scripts": {
-    "dev": "node server"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node -e \"require('./app.js'); console.log('Application syntax and initialization check passed');\""
   },
-  "keywords": [],
+  "keywords": [
+    "express",
+    "authentication",
+    "jwt",
+    "mongoose",
+    "security",
+    "middleware",
+    "csrf",
+    "rate-limit"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
