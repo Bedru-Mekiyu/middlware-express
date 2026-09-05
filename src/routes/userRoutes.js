@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const asyncHandler = require('../src/../middlewares/asyncHandler');
+const asyncHandler = require('../middlewares/asyncHandler');
 const userController = require('../controllers/userController');
-const authMiddleware = require('../src/../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 router.get(
     '/',

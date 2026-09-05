@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const connectDB = require('./src/config/db');
-const logger = require('./config/logger');
+const logger = require('./src/config/logger');
 
 connectDB();
 
@@ -13,7 +13,6 @@ process.on('uncaughtException', err => {
     });
     process.exit(1);
 });
-
 
 const app = require('./app');
 

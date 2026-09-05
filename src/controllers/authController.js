@@ -1,21 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const AppError = require('../utils/AppError');
-
 const logger = require('../config/logger');
-
-logger.info({
-    event: 'User login',
-    userId: user._id,
-    email: user.email,
-    ip: req.ip
-});
-logger.warn({
-    event: 'Failed login attempt',
-    email,
-    ip: req.ip
-});
-
 
 const signAccessToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_ACCESS_SECRET, {
@@ -29,7 +15,6 @@ const signRefreshToken = (id) => {
     });
 };
 
-
 exports.register = async (req, res, next) => {
     const { name, email, password, role } = req.body;
 
@@ -40,11 +25,11 @@ exports.register = async (req, res, next) => {
         role
     });
 
-    const token = signToken(user._id);
+    const accessToken = signAccessToken(user._id);
 
     res.status(201).json({
         status: 'success',
-        token
+        accessToken
     });
 };
 
@@ -58,8 +43,20 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await user.correctPassword(password))) {
+        logger.warn({
+            event: 'Failed login attempt',
+            email,
+            ip: req.ip
+        });
         return next(new AppError('Invalid credentials', 401));
     }
+
+    logger.info({
+        event: 'User login',
+        userId: user._id,
+        email: user.email,
+        ip: req.ip
+    });
 
     const accessToken = signAccessToken(user._id);
     const refreshToken = signRefreshToken(user._id);
@@ -80,17 +77,20 @@ exports.login = async (req, res, next) => {
     });
 };
 
-
 exports.logout = async (req, res, next) => {
     const token = req.cookies.refreshToken;
 
     if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-        const user = await User.findById(decoded.id);
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+            const user = await User.findById(decoded.id);
 
-        if (user) {
-            user.refreshToken = null;
-            await user.save({ validateBeforeSave: false });
+            if (user) {
+                user.refreshToken = null;
+                await user.save({ validateBeforeSave: false });
+            }
+        } catch (err) {
+            // Ignore invalid/expired token during logout
         }
     }
 
@@ -102,8 +102,6 @@ exports.logout = async (req, res, next) => {
     });
 };
 
-
-
 exports.refreshToken = async (req, res, next) => {
     const token = req.cookies.refreshToken;
 
@@ -111,7 +109,12 @@ exports.refreshToken = async (req, res, next) => {
         return next(new AppError('No refresh token provided', 401));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch (err) {
+        return next(new AppError('Invalid or expired refresh token', 401));
+    }
 
     const user = await User.findById(decoded.id);
 
